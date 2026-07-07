@@ -1,0 +1,12 @@
+# 제어 계층 (A) — MAVLink 공수/방어
+pymavlink==2.4.42
+
+# AI 인지 계층 (B) — 적대적 예제 데모
+# torch/ultralytics는 용량이 크므로 perception 데모를 돌릴 때만 설치하세요.
+#   pip install torch torchvision ultralytics
+numpy>=1.24
+opencv-python>=4.8
+Pillow>=10.0
+
+# 방어 에이전트 로깅/분석
+rich>=13.0

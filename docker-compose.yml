@@ -1,0 +1,24 @@
+# 풀피델리티 SITL: UAV(Copter) + UGV(Rover) 동시 구동
+# 사용:  docker compose up --build      (최초 빌드 ~15-25분)
+# 텔레메트리는 host.docker.internal 로 호스트에 push → 호스트에서 defense/attacks 실행.
+#   python -m defense.agent --uav udpin:127.0.0.1:14550 --ugv udpin:127.0.0.1:14560
+services:
+  uav-copter:
+    build: { context: ., dockerfile: sim/Dockerfile }
+    image: dah-ardupilot-sitl
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    command: >
+      python3 Tools/autotest/sim_vehicle.py -v ArduCopter
+      -l 37.5000,127.0000,100,0 --no-rebuild -w
+      --out udpout:host.docker.internal:14550
+    ports: ["14550:14550/udp"]
+
+  ugv-rover:
+    image: dah-ardupilot-sitl          # uav 빌드 이미지 재사용
+    depends_on: [uav-copter]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    command: >
+      python3 Tools/autotest/sim_vehicle.py -v Rover
+      -l 37.5010,127.0010,50,0 --no-rebuild -w
+      --out udpout:host.docker.internal:14560
+    ports: ["14560:14560/udp"]
