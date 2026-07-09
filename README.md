@@ -117,18 +117,19 @@ scoring/       CompetitionScoringAdapter (공격/방어/가용성 SLA) + 내부 
 sim/           경량 mock 차량 + ArduPilot SITL Dockerfile
 configs/       default.toml(임계값·포트·Red) · scoring.toml(배점)
 tests/         unit/ + integration/ (30 passed)
-docs/          아키텍처·공격 시나리오·Blue/Red 설계·예선 보고서(.md)
+docs/          아키텍처·공격 시나리오·Blue/Red 설계 문서
 ```
 
 ---
 
 ## 문서
 
-- [docs/DAH2026_예선보고서.md](docs/DAH2026_예선보고서.md) — 예선 보고서(공격 시나리오·방어 아키텍처·AI 에이전트)
 - [docs/architecture.md](docs/architecture.md) — 계층·공격→방어 매핑
 - [docs/attack_scenarios.md](docs/attack_scenarios.md) — 공격 시나리오 A~G 상세·라이브 테스트
 - [docs/blue_agent.md](docs/blue_agent.md) — 방어(Blue) 에이전트 설계·구현
 - [docs/agent_technology_stack.md](docs/agent_technology_stack.md) — 기술 스택·이벤트 계약·로드맵
+
+예선 보고서는 제출 PDF로 별도 관리한다.
 
 ---
 
