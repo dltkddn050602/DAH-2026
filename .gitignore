@@ -1,10 +1,25 @@
+# --- Python ---
 .venv/
 __pycache__/
 *.pyc
-*.log
-logs/
-*.tlog
-docs/*.mp4
-.DS_Store
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
+# --- 로그·생성 산출물 (시뮬레이션 실행 시 재생성됨) ---
+*.log
+*.tlog
+logs/
+logs_mitm/
+logs_jam/
+logs_red/
+
+# --- 문서 바이너리 (마크다운 소스만 저장소에 둔다) ---
+*.pdf
+docs/*.mp4
+
+# --- OS/IDE ---
+.DS_Store
 .claude/settings.local.json

@@ -166,6 +166,97 @@ class CommandAnomalyMonitor:
         return findings or None
 
 
+class InterceptionMonitor:
+    """데이터링크 MITM/도청 → 능동 변조 탐지.
+
+    도청(수동 릴레이)은 프레임을 바이트 그대로 중계하므로 텔레메트리 '내용'상 서명이
+    없다 — 순수 기밀성 상실은 텔레메트리만으로는 관측 불가하다(정직한 한계, 링크 인증/
+    암호화·네트워크 계층 대책의 영역). 그러나 공격자가 상황인식을 오염시키려 능동
+    변조/주입하는 순간, 특정 오토파일럿에 무관한 두 공통 서명이 나타난다.
+
+      (1) 운동학 정합성 위반: 보고된 위치의 프레임 간 변화량이 같은 프레임의 속도
+          필드(vx,vy)와 어긋난다. 공격자는 좌표만 밀어내고 속도는 그대로 두기 때문.
+      (2) 발신원 시퀀스 불연속: 재기록/주입된 프레임이 원 발신원과 다른 MAVLink
+          시퀀스로 방출되어, 동일 sysid의 seq가 역행·급점프한다.
+    """
+
+    def __init__(self, kin_warn_m=6.0, kin_crit_m=25.0, seq_jump=8, seq_window=12):
+        self.kin_warn_m = kin_warn_m
+        self.kin_crit_m = kin_crit_m
+        self.seq_jump = seq_jump
+        self.seq_window = seq_window
+        self.last_pos = None        # (lat, lon)
+        self.last_t = None          # time_boot_ms (s)
+        self.last_seq = {}          # sysid -> seq
+        self.seq_anoms = []         # 최근 시퀀스 이상 타임스탬프
+
+    def update(self, msg):
+        t = msg.get_type()
+        findings = []
+
+        # (2) 발신원 시퀀스 정합성 — 모든 프레임에 적용
+        sysid = msg.get_srcSystem()
+        seq = msg.get_seq()
+        prev = self.last_seq.get(sysid)
+        self.last_seq[sysid] = seq
+        if prev is not None:
+            delta = (seq - prev) % 256          # 정상 링크는 1 (유실 시 소폭 증가)
+            backward = delta > 128              # 롤오버 제외한 역행
+            big_jump = self.seq_jump < delta <= 128
+            if backward or big_jump:
+                now = time.time()
+                self.seq_anoms = [x for x in self.seq_anoms if now - x <= 3.0]
+                self.seq_anoms.append(now)
+                if len(self.seq_anoms) >= 3:
+                    self.seq_anoms.clear()
+                    findings.append(Finding(
+                        detector="MITM 인터셉션 감시",
+                        signal=(f"동일 sysid({sysid}) MAVLink 시퀀스 불연속 다발 "
+                                f"(Δseq={delta}) — 프레임 주입/재기록 의심"),
+                        threat_map={"STRIDE": "Tampering/Spoofing",
+                                    "TARA": "중간자 변조 → 상황인식 오염",
+                                    "ATT&CK-ICS": "Adversary-in-the-Middle(T0830)"},
+                        risk="High",
+                        response=("링크 무결성(서명/시퀀스) 검증, 텔레메트리 발신원 재인증, "
+                                  "링크 암호화·경로 무결성 점검, 링크 전환"),
+                        evidence={"sysid": sysid, "delta_seq": delta},
+                    ))
+
+        # (1) 운동학 정합성 — 융합 위치 프레임에 적용
+        if t == "GLOBAL_POSITION_INT":
+            lat, lon = msg.lat / 1e7, msg.lon / 1e7
+            tb = msg.time_boot_ms / 1000.0
+            v = math.hypot(msg.vx, msg.vy) / 100.0     # cm/s → m/s (보고 속도)
+            if self.last_pos is not None and self.last_t is not None:
+                dt = tb - self.last_t
+                if 0.02 < dt < 5.0:
+                    actual = haversine_m(*self.last_pos, lat, lon)
+                    expected = v * dt
+                    residual = abs(actual - expected)
+                    if residual >= self.kin_warn_m:
+                        risk = "Critical" if residual >= self.kin_crit_m else "High"
+                        findings.append(Finding(
+                            detector="MITM 인터셉션 감시",
+                            signal=(f"위치 변화 {actual:.0f}m 가 보고 속도 기대치 "
+                                    f"{expected:.0f}m 와 {residual:.0f}m 불일치 — 위치 위조 주입"),
+                            threat_map={"STRIDE": "Tampering",
+                                        "TARA": "위조 피드백 → 상황인식 오염/오항법",
+                                        "STPA-Sec": "위조 피드백 기반 불안전 제어행동"},
+                            risk=risk,
+                            response=("융합위치 신뢰도 하향, 원시 GPS·INS 교차검증, "
+                                      "링크 무결성 검증"
+                                      + (", 즉시 안전모드/정지 권고(운용자 승인)"
+                                         if risk == "Critical" else "")),
+                            evidence={"actual_move_m": round(actual, 1),
+                                      "expected_move_m": round(expected, 1),
+                                      "residual_m": round(residual, 1)},
+                        ))
+            self.last_pos = (lat, lon)
+            self.last_t = tb
+
+        return findings or None
+
+
 class SensorConsensusMonitor:
     """다중 센서/AI 판단 불일치 → 적대적 예제·센서 기만 탐지.
 

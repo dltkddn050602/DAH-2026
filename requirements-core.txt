@@ -1,0 +1,5 @@
+# Blue Agent 코어 — 인터넷/GPU 없이 CPU에서 공방·채점·로그가 동작 (기술스택 §5)
+pymavlink==2.4.42
+pydantic>=2.5
+rich>=13.0
+numpy>=1.24

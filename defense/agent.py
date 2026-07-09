@@ -26,6 +26,7 @@ from pymavlink import mavutil
 from defense.detectors import (
     GnssInsCrossCheck, LinkHealthMonitor,
     CommandAnomalyMonitor, SensorConsensusMonitor,
+    InterceptionMonitor,
 )
 
 try:
@@ -48,10 +49,11 @@ class VehicleMonitor:
         self.link = LinkHealthMonitor(expected_hz=expected_hz)
         self.cmd = CommandAnomalyMonitor()
         self.sensor = SensorConsensusMonitor()
+        self.mitm = InterceptionMonitor()
         self._dedup = {}   # detector.signal -> last_fire_ts (알림 폭주 억제)
 
     def detectors(self):
-        return [self.gnss, self.link, self.cmd]
+        return [self.gnss, self.link, self.cmd, self.mitm]
 
     def pump(self):
         findings = []

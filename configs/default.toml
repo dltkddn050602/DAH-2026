@@ -1,0 +1,99 @@
+# DAH 2026 Blue Agent 기본 설정
+# 임계값·포트·배점을 코드에 박지 않고 여기서 교체한다(기술스택 문서 §2-6, §5).
+schema_version = "1.0"
+
+[run]
+seed = 20260707          # 결정적 재현용 난수 시드
+rate_hz = 4.0            # 기대 텔레메트리 주기(HEARTBEAT 등)
+tick_s = 0.05            # 방어 루프 주기
+
+[bus]
+maxsize = 1024
+policy = "block"         # block | drop_new | drop_old
+
+[vehicles.uav]
+source = "udpin:127.0.0.1:14550"
+expected_hz = 4.0
+
+[vehicles.ugv]
+source = "udpin:127.0.0.1:14560"
+expected_hz = 4.0
+
+# --- 탐지 임계값 (흐름 A~F) ---
+[detect.gnss]              # 흐름 A/C: GNSS-INS 교차검증
+warn_m = 30.0
+crit_m = 100.0
+
+[detect.link]             # 흐름 D: 링크 상태/재밍/DoS
+warn_factor = 3.0         # 기대 주기 대비 몇 배 지연부터 경고
+crit_gap_s = 3.0          # 두절 임계
+
+[detect.command]          # 흐름 B: 명령 이상
+window_s = 3.0
+max_cmds = 5
+
+[detect.route]            # 흐름 A: 경로 일탈/경로변경 빈도
+xtrack_warn_m = 40.0      # 계획 경로 대비 이탈 경고
+route_change_window_s = 10.0
+route_change_max = 3      # 창 내 경로 변경 횟수 임계
+
+[detect.sensor]           # 흐름 E: 센서/AI 신뢰
+conf_drop = 0.4
+disagree_thresh = 0.5
+
+[detect.swarm]            # 흐름 F: 군집 신뢰 전파
+consensus_m = 25.0        # 노드 간 상대위치 합의 허용오차
+node_trust_drop = 0.3
+
+# --- Streaming ML (Phase 3) ---
+[ml]
+enabled = true
+n_trees = 25
+height = 8
+window_size = 250
+anomaly_quantile = 0.995  # 이 분위수 초과 점수를 보조 이상신호로
+drift_delta = 0.002       # ADWIN
+
+# --- 대응/게이트 (Phase 4) ---
+[response]
+auto_max_risk = "Medium"  # 이 이하 자동 조치, 초과는 HITL 승인
+
+[gate]
+# 실행 가능 대상은 loopback/mock/SITL 로만 제한
+allowed_targets = ["127.0.0.1", "loopback", "mock", "sitl"]
+allowed_playbooks = [
+    "downgrade_gnss", "switch_link", "hold_position",
+    "require_reauth", "raise_sensor_check", "isolate_node", "observe",
+]
+
+# --- Red(공격) AI 에이전트 (Phase 6) ---
+[red]
+enabled = true
+policy = "adaptive"       # adaptive(LinUCB 문맥적 밴딧) | baseline(고정순서 비교군)
+seed = 20260707           # 정책 재현용 시드
+alpha = 0.6               # LinUCB 탐험 계수(클수록 탐험↑)
+inject_target = "udpout:127.0.0.1:14555"  # UAV cmd-in 포트(telem 14550 + 5)
+settle_s = 2.0            # 공격 실행 후 Blue 반응을 관측하는 창(초)
+decisions = 24            # 캠페인 1회당 공격 의사결정 횟수
+# 실행 허용 도구(자율성 경계). 라이브 루프는 주입 포트로 동작하는 도구만 기본 허용.
+allowed_tools = ["wait", "gnss_spoof", "c2_inject"]
+max_drift_m = 200.0       # 파라미터 안전 상한(격리 시뮬레이션 보호)
+max_c2_count = 30
+max_duration_s = 20.0
+evidence_dir = "logs_red"
+
+# --- 채점 (Phase 5) ---
+[scoring]
+config = "configs/scoring.toml"
+
+[evidence]
+dir = "logs"
+jsonl = "logs/events.jsonl"
+sqlite = "logs/episodes.db"
+
+# --- 선택적 LLM (Phase 6) ---
+[llm]
+enabled = false
+endpoint = "http://127.0.0.1:11434"
+model = "llama3.1:8b"
+timeout_s = 8.0

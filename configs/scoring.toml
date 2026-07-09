@@ -1,0 +1,20 @@
+# CompetitionScoringAdapter 배점 (기술스택 문서 §7).
+# 공식 홈페이지 세부 배점은 코드에 박지 않고 여기서 교체한다.
+# 공식 축: 공격 점수, 방어 점수, 가용성(SLA 0~100).
+
+[weights]
+# 방어 점수 구성(내부 원인분석용 가중치 — 공식 규칙 공개 시 교체)
+true_positive = 10.0      # 실제 공격 정탐 1건
+false_positive = -4.0     # 오탐 1건
+missed = -8.0             # 미탐 1건
+fast_detect_bonus = 3.0   # 탐지 지연이 목표 이하일 때 가산
+
+[targets]
+detect_latency_s = 2.0    # 이 이하로 탐지하면 fast_detect_bonus
+
+[availability]
+# 가용성(SLA)은 공격/방어와 독립된 공통 제약(문서 §7).
+base = 100.0
+link_loss_penalty = 0.5   # 패킷 손실 1%p 당 감점
+mission_deviation_penalty = 2.0  # 임무경로 이탈 100m 당 감점
+overreaction_penalty = 1.5       # 방어 과잉대응(불필요 HITL/차단) 1건당 감점
