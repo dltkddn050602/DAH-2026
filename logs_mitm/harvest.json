@@ -1,0 +1,16 @@
+{
+  "sysid": null,
+  "vehicle_type": null,
+  "autopilot": null,
+  "armed": null,
+  "mode": null,
+  "battery_pct": null,
+  "home": null,
+  "last_pos": null,
+  "sats": null,
+  "track": [],
+  "commands": [],
+  "msg_counts": {},
+  "frames_relayed": 0,
+  "frames_tampered": 0
+}

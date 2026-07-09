@@ -1,0 +1,183 @@
+{
+  "topology": "vehicle→[MITM 14550→14551]→defense",
+  "activate_after_s": 6.0,
+  "duration_s": 16.0,
+  "harvest": {
+    "sysid": 1,
+    "mode": "AUTO",
+    "armed": true,
+    "battery_pct": 92,
+    "home": [
+      37.5,
+      127.0
+    ],
+    "last_pos": [
+      37.5006798,
+      127.0017739,
+      100.0
+    ],
+    "track_points": 16,
+    "frames_relayed": 245,
+    "frames_tampered": 40,
+    "msg_counts": {
+      "HEARTBEAT": 62,
+      "GLOBAL_POSITION_INT": 61,
+      "GPS_RAW_INT": 61,
+      "SYS_STATUS": 61
+    }
+  },
+  "incident_total": 30,
+  "incident_by_detector": {
+    "MITM 인터셉션 감시": 7,
+    "GNSS-INS 교차검증": 23
+  },
+  "incident_by_risk": {
+    "High": 18,
+    "Critical": 12
+  },
+  "samples": [
+    {
+      "incident": 1,
+      "time": "2026-07-07T15:44:19",
+      "vehicle": "uav",
+      "detector": "MITM 인터셉션 감시",
+      "signal": "동일 sysid(1) MAVLink 시퀀스 불연속 다발 (Δseq=169) — 프레임 주입/재기록 의심",
+      "threat_map": {
+        "STRIDE": "Tampering/Spoofing",
+        "TARA": "중간자 변조 → 상황인식 오염",
+        "ATT&CK-ICS": "Adversary-in-the-Middle(T0830)"
+      },
+      "risk": "High",
+      "response": "링크 무결성(서명/시퀀스) 검증, 텔레메트리 발신원 재인증, 링크 암호화·경로 무결성 점검, 링크 전환",
+      "auto_action": false,
+      "evidence": {
+        "sysid": 1,
+        "delta_seq": 169
+      }
+    },
+    {
+      "incident": 2,
+      "time": "2026-07-07T15:44:19",
+      "vehicle": "uav",
+      "detector": "MITM 인터셉션 감시",
+      "signal": "위치 변화 15m 가 보고 속도 기대치 3m 와 12m 불일치 — 위치 위조 주입",
+      "threat_map": {
+        "STRIDE": "Tampering",
+        "TARA": "위조 피드백 → 상황인식 오염/오항법",
+        "STPA-Sec": "위조 피드백 기반 불안전 제어행동"
+      },
+      "risk": "High",
+      "response": "융합위치 신뢰도 하향, 원시 GPS·INS 교차검증, 링크 무결성 검증",
+      "auto_action": false,
+      "evidence": {
+        "actual_move_m": 14.9,
+        "expected_move_m": 3.0,
+        "residual_m": 11.9
+      }
+    },
+    {
+      "incident": 3,
+      "time": "2026-07-07T15:44:20",
+      "vehicle": "uav",
+      "detector": "GNSS-INS 교차검증",
+      "signal": "GNSS와 INS 위치가 41m 불일치 (임계 30m)",
+      "threat_map": {
+        "STRIDE": "Spoofing",
+        "TARA": "경로 왜곡 → 임무 실패/충돌 위험",
+        "STPA-Sec": "불안전 제어행동(위조 위치 기반 항법)"
+      },
+      "risk": "High",
+      "response": "GNSS 신뢰도 하향, INS/비전 기반 항법 전환, 안전속도 제한",
+      "auto_action": false,
+      "evidence": {
+        "gps": [
+          37.5001058,
+          127.0007659
+        ],
+        "ins": [
+          37.5001151,
+          127.0012315
+        ],
+        "divergence_m": 41.1
+      }
+    },
+    {
+      "incident": 4,
+      "time": "2026-07-07T15:44:20",
+      "vehicle": "uav",
+      "detector": "GNSS-INS 교차검증",
+      "signal": "GNSS와 INS 위치가 38m 불일치 (임계 30m)",
+      "threat_map": {
+        "STRIDE": "Spoofing",
+        "TARA": "경로 왜곡 → 임무 실패/충돌 위험",
+        "STPA-Sec": "불안전 제어행동(위조 위치 기반 항법)"
+      },
+      "risk": "High",
+      "response": "GNSS 신뢰도 하향, INS/비전 기반 항법 전환, 안전속도 제한",
+      "auto_action": false,
+      "evidence": {
+        "gps": [
+          37.5001151,
+          127.0007977
+        ],
+        "ins": [
+          37.5001151,
+          127.0012315
+        ],
+        "divergence_m": 38.3
+      }
+    },
+    {
+      "incident": 5,
+      "time": "2026-07-07T15:44:20",
+      "vehicle": "uav",
+      "detector": "GNSS-INS 교차검증",
+      "signal": "GNSS와 INS 위치가 53m 불일치 (임계 30m)",
+      "threat_map": {
+        "STRIDE": "Spoofing",
+        "TARA": "경로 왜곡 → 임무 실패/충돌 위험",
+        "STPA-Sec": "불안전 제어행동(위조 위치 기반 항법)"
+      },
+      "risk": "High",
+      "response": "GNSS 신뢰도 하향, INS/비전 기반 항법 전환, 안전속도 제한",
+      "auto_action": false,
+      "evidence": {
+        "gps": [
+          37.5001151,
+          127.0007977
+        ],
+        "ins": [
+          37.5001248,
+          127.001399
+        ],
+        "divergence_m": 53.1
+      }
+    },
+    {
+      "incident": 6,
+      "time": "2026-07-07T15:44:20",
+      "vehicle": "uav",
+      "detector": "GNSS-INS 교차검증",
+      "signal": "GNSS와 INS 위치가 50m 불일치 (임계 30m)",
+      "threat_map": {
+        "STRIDE": "Spoofing",
+        "TARA": "경로 왜곡 → 임무 실패/충돌 위험",
+        "STPA-Sec": "불안전 제어행동(위조 위치 기반 항법)"
+      },
+      "risk": "High",
+      "response": "GNSS 신뢰도 하향, INS/비전 기반 항법 전환, 안전속도 제한",
+      "auto_action": false,
+      "evidence": {
+        "gps": [
+          37.5001248,
+          127.0008294
+        ],
+        "ins": [
+          37.5001248,
+          127.001399
+        ],
+        "divergence_m": 50.3
+      }
+    }
+  ]
+}

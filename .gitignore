@@ -8,13 +8,12 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# --- 로그·생성 산출물 (시뮬레이션 실행 시 재생성됨) ---
+# --- 로그: 실험 결과(증거)를 저장소에 포함한다 ---
+# logs/ logs_mitm/ logs_jam/ logs_red/ 는 추적한다(공방·검증 실측 로그).
+# stray 루트 로그만 무시하되, 로그 폴더 안의 실행 로그는 증거로 포함한다.
 *.log
+!logs_mitm/*.log
 *.tlog
-logs/
-logs_mitm/
-logs_jam/
-logs_red/
 
 # --- 문서 바이너리 (마크다운 소스만 저장소에 둔다) ---
 *.pdf

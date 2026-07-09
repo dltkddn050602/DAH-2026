@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/dltkddn/DAH-2026/sim/mock_vehicle.py", line 231, in <module>
+    main()
+    ~~~~^^
+  File "/home/dltkddn/DAH-2026/sim/mock_vehicle.py", line 227, in main
+    MockVehicle(args.vehicle, out, cmd_in, args.rate).run()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/dltkddn/DAH-2026/sim/mock_vehicle.py", line 206, in run
+    time.sleep(sleep)
+    ~~~~~~~~~~^^^^^^^
+KeyboardInterrupt
+[mock_vehicle] telemetry→udpout:127.0.0.1:14550  commands←udpin:127.0.0.1:14555
+[mock_vehicle] copter 구동
+  telemetry out : 127.0.0.1:14550
+  command  in   : listening
