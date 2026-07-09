@@ -165,13 +165,12 @@ Half-Space Trees는 규칙 탐지기를 대체하지 않는다. 알려진 치명
 
 ### 의존성 분리 원칙
 
-기본 데모에 대형 모델 의존성을 강제하지 않는다.
+기본 데모에 대형 모델 의존성을 강제하지 않는다. 단일 `requirements.txt`로 합치되,
+용량이 큰 perception 의존성만 같은 파일 내 선택 주석으로 분리한다.
 
 ```text
-requirements-core.txt        pymavlink, numpy, pydantic, rich
-requirements-ml.txt          river
-requirements-perception.txt  torch, torchvision, ultralytics, opencv
-requirements-dev.txt         pytest, pytest-asyncio, ruff, mypy
+requirements.txt   코어(pymavlink·numpy·pydantic·rich) + ML(river) + 개발(pytest·pytest-asyncio·ruff·mypy)
+                   # perception(torch·torchvision·ultralytics·opencv) — 필요 시 주석 해제
 ```
 
 실제 버전은 호환성 테스트 후 lock 파일에 고정한다. 문서나 Dockerfile에서 `latest` 태그를

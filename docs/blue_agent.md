@@ -175,9 +175,8 @@ sim/ attacks/       # mock/SITL 차량, Red 공격 툴킷
 ## 8. 실행 방법
 
 ```bash
-# 의존성 (코어만으로 완주 가능; ML은 선택)
-pip install -r requirements-core.txt      # pymavlink, pydantic, rich, numpy
-pip install -r requirements-ml.txt        # (선택) river — 미설치 시 자동 폴백
+# 의존성 (단일 파일; 코어·ML·개발 포함, torch류만 선택 주석)
+pip install -r requirements.txt
 
 # 원커맨드 데모: mock UAV+UGV + Blue Agent + 순차 공격 + 채점 요약
 ./run_blue_demo.sh

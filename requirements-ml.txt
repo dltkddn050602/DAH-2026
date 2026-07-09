@@ -1,3 +1,0 @@
-# 스트리밍 이상탐지 — Half-Space Trees + ADWIN (기술스택 §4.2, §5)
-# 미설치 시 Blue Agent 는 결정론 규칙만으로 동작한다(자동 폴백).
-river>=0.21

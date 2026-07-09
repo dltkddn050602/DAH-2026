@@ -1,12 +1,27 @@
-# 제어 계층 (A) — MAVLink 공수/방어
+# DAH 2026 — 통합 의존성 (기술스택 §5)
+# 아래 코어+ML+개발 묶음만으로 인터넷·GPU 없이 공방·채점·로그·테스트가 완주된다.
+# 무거운 perception(적대적 예제) 의존성만 선택으로 분리해 두었다.
+#
+#   pip install -r requirements.txt          # 코어·ML·개발 (권장)
+
+# --- 코어 (필수): CPU에서 mock 공방·채점·로그 ---
 pymavlink==2.4.42
-
-# AI 인지 계층 (B) — 적대적 예제 데모
-# torch/ultralytics는 용량이 크므로 perception 데모를 돌릴 때만 설치하세요.
-#   pip install torch torchvision ultralytics
+pydantic>=2.5
 numpy>=1.24
-opencv-python>=4.8
-Pillow>=10.0
-
-# 방어 에이전트 로깅/분석
 rich>=13.0
+
+# --- 스트리밍 이상탐지 (선택 기능; 미설치해도 규칙만으로 자동 폴백) ---
+river>=0.21
+
+# --- 개발/검증 ---
+pytest>=8.0
+pytest-asyncio>=0.23
+ruff>=0.4
+mypy>=1.8
+
+# --- AI 인지/적대적 예제 데모 (선택; 용량 큼 — 필요 시 주석 해제) ---
+# torch>=2.0
+# torchvision>=0.15
+# ultralytics>=8.0
+# opencv-python>=4.8
+# Pillow>=10.0
