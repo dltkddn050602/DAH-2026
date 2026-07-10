@@ -37,9 +37,11 @@ xtrack_warn_m = 40.0      # 계획 경로 대비 이탈 경고
 route_change_window_s = 10.0
 route_change_max = 3      # 창 내 경로 변경 횟수 임계
 
-[detect.sensor]           # 흐름 E: 센서/AI 신뢰
-conf_drop = 0.4
-disagree_thresh = 0.5
+[detect.sensor]           # 흐름 E: 센서/AI 신뢰 (인지모델 회피·적대적 예제)
+conf_drop = 0.4           # 프레임 간 탐지 신뢰도 붕괴 임계
+disagree_thresh = 0.5     # 카메라↔LiDAR/타 센서 교차검증 합의도 임계
+flicker_window = 6        # 프레임 간 라벨 튐(temporal flicker) 관측 창
+flicker_flips = 3         # 창 내 라벨 반전 임계
 
 [detect.swarm]            # 흐름 F: 군집 신뢰 전파
 consensus_m = 25.0        # 노드 간 상대위치 합의 허용오차

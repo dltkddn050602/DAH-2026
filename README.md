@@ -78,7 +78,8 @@ python -m agents.red.campaign --policy baseline --decisions 16  # 비교군
 
 ### 테스트
 ```bash
-python -m pytest -q        # 30 passed (단위 26 + 통합 4)
+python -m pytest -q        # 35 passed (단위 31 + 통합 4)
+python -m attacks.perception.sim_evasion   # 인지 회피 → 인식 방어 커플링 실험(torch 불필요)
 ```
 
 ---
@@ -90,7 +91,7 @@ python -m pytest -q        # 30 passed (단위 26 + 통합 4)
 | A | GNSS 스푸핑 | `attacks/gnss_spoof.py` | GPS_RAW↔GLOBAL_POSITION divergence | GNSS-INS 교차검증 |
 | B | C2 명령 주입 | `attacks/c2_injection.py` | COMMAND_ACK 빈도↑·모드 급변 | 명령 이상 감시 |
 | D | 재밍/DoS | `attacks/jamming_dos.py` | HEARTBEAT 간격↑·두절 | 링크 상태 감시 |
-| E | AI 적대적 예제 | `attacks/perception/` | AI 신뢰도 급락·센서 불일치 | 센서/AI 합의 감시 |
+| E | AI 적대적 예제 | `attacks/perception/` | ①AI 신뢰도 붕괴 ②카메라↔LiDAR 불일치 ③라벨 flicker | 센서/AI 합의 감시 |
 | G | MITM 인터셉션 | `attacks/mitm_intercept.py` | 운동학 잔차·seq 불연속 | MITM 인터셉션 감시 |
 
 Red AI 에이전트(`agents/red/`)는 위 도구를 allowlist 어댑터로 감싸, 관측 문맥에 따라 종류·강도를
@@ -116,7 +117,7 @@ defense/       (구버전) 단일 규칙 방어 루프 — 호환 유지
 scoring/       CompetitionScoringAdapter (공격/방어/가용성 SLA) + 내부 지표
 sim/           경량 mock 차량 + ArduPilot SITL Dockerfile
 configs/       default.toml(임계값·포트·Red) · scoring.toml(배점)
-tests/         unit/ + integration/ (30 passed)
+tests/         unit/ + integration/ (35 passed)
 docs/          아키텍처·공격 시나리오·Blue/Red 설계 문서
 ```
 

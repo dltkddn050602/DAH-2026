@@ -15,6 +15,7 @@ TelemetryEvent 를 소비하고 FindingEvent(위협모델 매핑·위험도·근
 from __future__ import annotations
 
 import time
+from collections import deque
 from typing import Any
 
 from core.events import AttackFlow, FindingEvent, Risk, TelemetryEvent
@@ -257,17 +258,32 @@ class StateConsistencyDetector(Detector):
 
 
 class SensorConsensusDetector(Detector):
-    """흐름 E — 다중 센서/AI 판단 불일치 → 적대적 예제·센서 기만.
+    """흐름 E — 인지모델 회피(적대적 예제) 및 다중 센서 기만 탐지.
 
-    perception 파이프라인이 features["ai"] = {conf, agreement} 로 주입하면 평가한다
-    (텔레메트리만으로는 관측 불가한 AI 신호).
+    인지 파이프라인(EO/IR 객체탐지 등)이 features["ai"] = {conf, agreement, label}
+    로 결과를 주입하면, 카메라를 속이는 공격(attacks/perception/adversarial_patch.py의
+    PGD 섭동·adversarial patch)을 **세 가지 상보적 서명**으로 잡는다.
+
+      1) 탐지 신뢰도 붕괴(confidence collapse) — 표적 conf 가 프레임 사이 급락.
+      2) 카메라↔LiDAR/타 센서 교차검증 붕괴 — agreement(합의도) 저하.
+         (카메라만 속고 LiDAR/레이더는 표적을 계속 보면 합의가 깨진다.)
+      3) 프레임 간 라벨 튐(temporal flicker) — 짧은 창에서 표적 클래스 라벨이 반복 반전.
+         적대적 섭동은 단일 프레임 신뢰도만이 아니라 시간적으로 불안정한 판단을 유발한다.
+
+    (1)만 보면 정상적인 신뢰도 변동에 오탐할 수 있으므로 (2)(3)을 함께 봐 커버리지를
+    넓히고, 상관기(Correlator)의 교차확인으로 최종 오탐을 억제한다.
+    이 신호는 텔레메트리만으로는 관측 불가하며 인지 계층에서 주입해야 한다.
     """
     name = "센서/AI 합의 감시"
 
-    def __init__(self, conf_drop: float = 0.4, disagree_thresh: float = 0.5) -> None:
+    def __init__(self, conf_drop: float = 0.4, disagree_thresh: float = 0.5,
+                 flicker_window: int = 6, flicker_flips: int = 3) -> None:
         self.conf_drop = conf_drop
         self.disagree = disagree_thresh
+        self.flicker_window = flicker_window
+        self.flicker_flips = flicker_flips
         self.last_conf: float | None = None
+        self.labels: deque[Any] = deque(maxlen=flicker_window)
 
     def update(self, evt: TelemetryEvent) -> list[FindingEvent]:
         f = evt.features
@@ -276,26 +292,50 @@ class SensorConsensusDetector(Detector):
             return []
         out: list[FindingEvent] = []
         conf = ai.get("conf")
-        agreement = ai.get("agreement")
+        agreement = ai.get("agreement")     # 카메라 vs LiDAR/타 센서 합의도(0~1)
+        label = ai.get("label")             # 프레임별 표적 클래스 라벨
+
+        # 1) 탐지 신뢰도 붕괴 (adversarial evasion 의 1차 서명)
         if conf is not None and self.last_conf is not None and \
                 (self.last_conf - conf) >= self.conf_drop:
             out.append(self._finding(
                 evt,
-                signal=f"AI 탐지 신뢰도 급락 {self.last_conf:.2f}→{conf:.2f}",
+                signal=f"AI 탐지 신뢰도 급락 {self.last_conf:.2f}→{conf:.2f} (카메라 인지 붕괴)",
                 flow=AttackFlow.E_SENSOR, confidence=0.8, risk=Risk.HIGH,
-                threat_map={"MITRE ATLAS": "Evasion(적대적 예제)",
-                            "TARA": "표적 오인식/장애물 회피 실패"},
+                threat_map={"MITRE ATLAS": "Evasion(적대적 예제/PGD 섭동)",
+                            "TARA": "표적 오인식/장애물 회피 실패",
+                            "STPA-Sec": "기만된 인지 기반 불안전 판단"},
                 evidence={"conf_prev": self.last_conf, "conf_now": conf},
             ))
+
+        # 2) 카메라↔LiDAR/타 센서 교차검증 붕괴
         if agreement is not None and agreement < self.disagree:
             out.append(self._finding(
                 evt,
-                signal=f"센서 간 표적 판단 불일치(합의도 {agreement:.2f})",
+                signal=f"카메라 판단 vs LiDAR/타 센서 교차검증 불일치(합의도 {agreement:.2f})",
                 flow=AttackFlow.E_SENSOR, confidence=0.7, risk=Risk.MEDIUM,
                 threat_map={"MITRE ATLAS": "Evasion",
                             "STPA-Sec": "센서 기만 기반 불안전 판단"},
                 evidence={"sensor_agreement": agreement},
             ))
+
+        # 3) 프레임 간 라벨 튐(temporal flicker)
+        if label is not None:
+            self.labels.append(label)
+            seq = list(self.labels)
+            flips = sum(1 for a, b in zip(seq, seq[1:]) if a != b)
+            if len(seq) >= self.flicker_window and flips >= self.flicker_flips:
+                out.append(self._finding(
+                    evt,
+                    signal=(f"프레임 간 표적 라벨 반복 반전 {flips}회/{len(seq)}프레임 "
+                            f"(temporal flicker — 인지 불안정)"),
+                    flow=AttackFlow.E_SENSOR, confidence=0.75, risk=Risk.HIGH,
+                    threat_map={"MITRE ATLAS": "Evasion(시간적 불안정 유발)",
+                                "TARA": "표적 판단 신뢰 붕괴"},
+                    evidence={"label_flips": flips, "window": len(seq),
+                              "recent_labels": seq},
+                ))
+
         if conf is not None:
             self.last_conf = conf
         return out
@@ -310,5 +350,6 @@ def default_rule_detectors(cfg) -> list[Detector]:
         LinkHealthDetector(cfg.run.rate_hz, d.link.warn_factor, d.link.crit_gap_s),
         CommandAnomalyDetector(d.command.window_s, d.command.max_cmds),
         StateConsistencyDetector(),
-        SensorConsensusDetector(d.sensor.conf_drop, d.sensor.disagree_thresh),
+        SensorConsensusDetector(d.sensor.conf_drop, d.sensor.disagree_thresh,
+                                d.sensor.flicker_window, d.sensor.flicker_flips),
     ]

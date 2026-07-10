@@ -36,6 +36,8 @@ class RouteCfg(BaseModel):
 class SensorCfg(BaseModel):
     conf_drop: float = 0.4
     disagree_thresh: float = 0.5
+    flicker_window: int = 6       # 프레임 간 라벨 튐 관측 창(프레임 수)
+    flicker_flips: int = 3        # 창 내 라벨 반전 임계
 
 
 class SwarmCfg(BaseModel):

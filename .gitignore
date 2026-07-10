@@ -22,3 +22,11 @@ docs/*.mp4
 # --- OS/IDE ---
 .DS_Store
 .claude/settings.local.json
+
+# SQLite 임시 파일
+*.db-journal
+*.db-wal
+*.db-shm
+
+# 예선 보고서 md 는 로컬 전용(제출 PDF로 별도 관리, repo 미포함)
+docs/DAH2026_예선보고서.md

@@ -17,7 +17,7 @@
 | GNSS 스푸핑 | GPS_RAW vs GLOBAL_POSITION divergence ↑ | `GnssInsCrossCheck` | STRIDE-Spoofing / STPA-Sec | 신뢰도 하향→INS 항법 전환→(Critical)귀환 |
 | C2 명령 주입 | COMMAND_ACK 빈도 ↑, 모드 급변 | `CommandAnomalyMonitor` | STRIDE-Tampering | 재인증·명령 차단·링크 전환 |
 | 재밍/DoS | HEARTBEAT 간격 ↑, 두절 | `LinkHealthMonitor` | STRIDE-DoS | 통신두절 안전정책·경로 복귀 |
-| 적대적 예제 | 탐지 신뢰도 급락, 센서 불일치 | `SensorConsensusMonitor` | ATLAS-Evasion | 센서 재검증·인간 확인 |
+| 적대적 예제(인지) | ①AI 신뢰도 붕괴 ②카메라↔LiDAR 불일치 ③프레임 라벨 flicker | `SensorConsensusDetector` | ATLAS-Evasion | 카메라 판단 보류·LiDAR 교차검증·(복구)LiDAR 축소운용·handoff |
 
 ## 방어 에이전트 설계 원칙 (문서와 일치)
 - **특정 오토파일럿 비종속**: 공통 관측 데이터(텔레메트리/네트워크/센서/AI출력)만 사용

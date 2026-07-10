@@ -1,0 +1,381 @@
+{
+  "experiment": "perception evasion → sensor-consensus defense",
+  "frames": 11,
+  "benign": 5,
+  "adversarial": 6,
+  "findings_total": 10,
+  "findings_by_signal": {
+    "신뢰도붕괴": 1,
+    "센서교차검증": 5,
+    "라벨flicker": 4
+  },
+  "risk_counts": {
+    "Medium": 5,
+    "High": 5,
+    "Critical": 0
+  },
+  "hitl_actions": 10,
+  "auto_actions": 0,
+  "findings": [
+    {
+      "frame": 5,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "High",
+      "signal": "AI 탐지 신뢰도 급락 0.88→0.30 (카메라 인지 붕괴)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion(적대적 예제/PGD 섭동)",
+        "TARA": "표적 오인식/장애물 회피 실패",
+        "STPA-Sec": "기만된 인지 기반 불안전 판단"
+      },
+      "evidence": {
+        "conf_prev": 0.88,
+        "conf_now": 0.3
+      }
+    },
+    {
+      "frame": 6,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "Medium",
+      "signal": "카메라 판단 vs LiDAR/타 센서 교차검증 불일치(합의도 0.30)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion",
+        "STPA-Sec": "센서 기만 기반 불안전 판단"
+      },
+      "evidence": {
+        "sensor_agreement": 0.3
+      }
+    },
+    {
+      "frame": 7,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "Medium",
+      "signal": "카메라 판단 vs LiDAR/타 센서 교차검증 불일치(합의도 0.24)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion",
+        "STPA-Sec": "센서 기만 기반 불안전 판단"
+      },
+      "evidence": {
+        "sensor_agreement": 0.24
+      }
+    },
+    {
+      "frame": 7,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "High",
+      "signal": "프레임 간 표적 라벨 반복 반전 3회/6프레임 (temporal flicker — 인지 불안정)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion(시간적 불안정 유발)",
+        "TARA": "표적 판단 신뢰 붕괴"
+      },
+      "evidence": {
+        "label_flips": 3,
+        "window": 6,
+        "recent_labels": [
+          "person",
+          "person",
+          "person",
+          "car",
+          "person",
+          "none"
+        ]
+      }
+    },
+    {
+      "frame": 8,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "Medium",
+      "signal": "카메라 판단 vs LiDAR/타 센서 교차검증 불일치(합의도 0.22)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion",
+        "STPA-Sec": "센서 기만 기반 불안전 판단"
+      },
+      "evidence": {
+        "sensor_agreement": 0.22
+      }
+    },
+    {
+      "frame": 8,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "High",
+      "signal": "프레임 간 표적 라벨 반복 반전 4회/6프레임 (temporal flicker — 인지 불안정)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion(시간적 불안정 유발)",
+        "TARA": "표적 판단 신뢰 붕괴"
+      },
+      "evidence": {
+        "label_flips": 4,
+        "window": 6,
+        "recent_labels": [
+          "person",
+          "person",
+          "car",
+          "person",
+          "none",
+          "car"
+        ]
+      }
+    },
+    {
+      "frame": 9,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "Medium",
+      "signal": "카메라 판단 vs LiDAR/타 센서 교차검증 불일치(합의도 0.20)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion",
+        "STPA-Sec": "센서 기만 기반 불안전 판단"
+      },
+      "evidence": {
+        "sensor_agreement": 0.2
+      }
+    },
+    {
+      "frame": 9,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "High",
+      "signal": "프레임 간 표적 라벨 반복 반전 5회/6프레임 (temporal flicker — 인지 불안정)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion(시간적 불안정 유발)",
+        "TARA": "표적 판단 신뢰 붕괴"
+      },
+      "evidence": {
+        "label_flips": 5,
+        "window": 6,
+        "recent_labels": [
+          "person",
+          "car",
+          "person",
+          "none",
+          "car",
+          "none"
+        ]
+      }
+    },
+    {
+      "frame": 10,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "Medium",
+      "signal": "카메라 판단 vs LiDAR/타 센서 교차검증 불일치(합의도 0.21)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion",
+        "STPA-Sec": "센서 기만 기반 불안전 판단"
+      },
+      "evidence": {
+        "sensor_agreement": 0.21
+      }
+    },
+    {
+      "frame": 10,
+      "phase": "adversarial",
+      "detector": "센서/AI 합의 감시",
+      "risk": "High",
+      "signal": "프레임 간 표적 라벨 반복 반전 5회/6프레임 (temporal flicker — 인지 불안정)",
+      "threat_map": {
+        "MITRE ATLAS": "Evasion(시간적 불안정 유발)",
+        "TARA": "표적 판단 신뢰 붕괴"
+      },
+      "evidence": {
+        "label_flips": 5,
+        "window": 6,
+        "recent_labels": [
+          "car",
+          "person",
+          "none",
+          "car",
+          "none",
+          "person"
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "frame": 5,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 6,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 7,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 7,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 8,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 8,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 9,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 9,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 10,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    },
+    {
+      "frame": 10,
+      "playbook": "raise_sensor_check",
+      "risk": "High",
+      "approval_required": true,
+      "steps": [
+        "[차단] 카메라 판단 보류",
+        "[차단] LiDAR/타 센서 교차검증 우선",
+        "[차단] AI 신뢰도 하향",
+        "[차단] 관측 커버리지 검증",
+        "[차단] 인간 확인 요청",
+        "[복구] 신뢰 센서(LiDAR 등) 기반 축소운용(degraded perception)",
+        "[복구] 정상 모델/센서 확인 후 인지 재개",
+        "[복구] 표적 판단 운용자 handoff"
+      ],
+      "auto_execute": false,
+      "approval_pending": true
+    }
+  ]
+}

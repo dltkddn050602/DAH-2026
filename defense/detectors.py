@@ -263,18 +263,28 @@ class SensorConsensusMonitor:
     perception 모듈(또는 SITL 카메라 파이프라인)이 산출한 탐지 신뢰도/합의 결과를
     inject_ai_result()로 주입하면 평가한다. (텔레메트리만으로는 관측 불가한 AI 신호)
     """
-    def __init__(self, conf_drop=0.4, disagree_thresh=0.5):
+    def __init__(self, conf_drop=0.4, disagree_thresh=0.5,
+                 flicker_window=6, flicker_flips=3):
         self.conf_drop = conf_drop
         self.disagree = disagree_thresh
+        self.flicker_window = flicker_window
+        self.flicker_flips = flicker_flips
         self.last_conf = None
+        self._labels = []
 
-    def inject_ai_result(self, model_conf: float, sensor_agreement: float):
+    def inject_ai_result(self, model_conf: float, sensor_agreement: float,
+                         label=None):
+        """인지 파이프라인의 프레임 결과(신뢰도·카메라↔LiDAR 합의도·표적 라벨)를 평가.
+
+        세 상보 서명: (1) 신뢰도 붕괴 (2) 카메라↔LiDAR 교차검증 붕괴
+        (3) 프레임 간 라벨 튐(temporal flicker).
+        """
         findings = []
         if self.last_conf is not None and (self.last_conf - model_conf) >= self.conf_drop:
             findings.append(Finding(
                 detector="센서/AI 합의 감시",
-                signal=f"AI 탐지 신뢰도 급락 {self.last_conf:.2f}→{model_conf:.2f}",
-                threat_map={"MITRE ATLAS": "Evasion(적대적 예제)",
+                signal=f"AI 탐지 신뢰도 급락 {self.last_conf:.2f}→{model_conf:.2f} (카메라 인지 붕괴)",
+                threat_map={"MITRE ATLAS": "Evasion(적대적 예제/PGD 섭동)",
                             "TARA": "표적 오인식/장애물 회피 실패"},
                 risk="High",
                 response="센서 재검증, 다중 센서 합의 요구, AI 신뢰도 하향, 인간 확인 요청",
@@ -283,12 +293,26 @@ class SensorConsensusMonitor:
         if sensor_agreement < self.disagree:
             findings.append(Finding(
                 detector="센서/AI 합의 감시",
-                signal=f"센서 간 표적 판단 불일치(합의도 {sensor_agreement:.2f})",
+                signal=f"카메라 판단 vs LiDAR/타 센서 교차검증 불일치(합의도 {sensor_agreement:.2f})",
                 threat_map={"MITRE ATLAS": "Evasion",
                             "STPA-Sec": "센서 기만 기반 불안전 판단"},
                 risk="Medium",
                 response="표적판단 보류, 다중 센서 교차검증, 인간 확인 요청",
                 evidence={"sensor_agreement": sensor_agreement},
             ))
+        if label is not None:
+            self._labels.append(label)
+            self._labels = self._labels[-self.flicker_window:]
+            flips = sum(1 for a, b in zip(self._labels, self._labels[1:]) if a != b)
+            if len(self._labels) >= self.flicker_window and flips >= self.flicker_flips:
+                findings.append(Finding(
+                    detector="센서/AI 합의 감시",
+                    signal=f"프레임 간 표적 라벨 반복 반전 {flips}회/{len(self._labels)}프레임 (temporal flicker)",
+                    threat_map={"MITRE ATLAS": "Evasion(시간적 불안정 유발)",
+                                "TARA": "표적 판단 신뢰 붕괴"},
+                    risk="High",
+                    response="표적판단 보류, 다중 센서 교차검증, 인간 확인 요청",
+                    evidence={"label_flips": flips, "window": len(self._labels)},
+                ))
         self.last_conf = model_conf
         return findings or None
